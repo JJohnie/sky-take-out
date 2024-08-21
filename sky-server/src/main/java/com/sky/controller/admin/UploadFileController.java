@@ -9,9 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Array;
+import java.util.Arrays;
 
 @RestController
 @RequestMapping("/upload")
@@ -53,9 +53,7 @@ public class UploadFileController {
 
     @PostMapping("/merge")
     @ApiOperation("文件合并请求")
-    public Result merge(@RequestBody UploadFileDTO uploadFileDTO){
-        log.info("uploadFileDTO: {}",uploadFileDTO);
-
+    public Result merge(@RequestBody UploadFileDTO uploadFileDTO) throws IOException {
         //判断该文件是否已存在
         //获取文件后缀
         String fileName = uploadFileDTO.getFileName();
@@ -68,14 +66,32 @@ public class UploadFileController {
             return Result.success("合并成功");
         }
 
-        //读取文件夹
+        //读取文件夹,如果不存在,return
         if(!dir.exists()){
             return Result.error("合并失败,请重试");
         }
+
+        //开始合并
         File[] chunks = dir.listFiles();
 
-        //合并文件
+        Arrays.sort(chunks);
+        log.info("开始读取: {}",uploadFileDTO.getFileName());
 
+
+        assert chunks != null;
+        if(chunks.length != 0){
+            for (int i = 0; i < chunks.length; i++) {
+                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(FileUrlConstant.UPLOAD_FILE_PATH+uploadFileDTO.getFileHash()+"\\\\"+uploadFileDTO.getFileHash()+"-"+i));
+                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(FileUrlConstant.UPLOAD_FILE_PATH + uploadFileDTO.getFileHash() + extension,true));
+                int b = 0;
+                while ((b = bis.read()) != -1){
+                    bos.write(b);
+                }
+                bos.close();
+                bis.close();
+            }
+
+        }
         return Result.success("合并成功");
     }
 }
