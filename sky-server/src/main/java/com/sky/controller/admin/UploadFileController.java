@@ -6,6 +6,7 @@ import com.sky.result.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,10 +23,6 @@ public class UploadFileController {
     @PostMapping("/chunk")
     @ApiOperation("文件分片上传")
     public Result uploadFile(@RequestParam MultipartFile chunk ,@RequestParam String chunkHash,@RequestParam String fileHash,@RequestParam String fileName) throws IOException {
-        log.info("files: {}",chunk);
-        log.info("chunkHash: {}",chunkHash);
-        log.info("fileHash: {}",fileHash);
-        log.info("fileName: {}",fileName);
 
         //定义接受文件的地址
         String dir = FileUrlConstant.UPLOAD_FILE_PATH +fileHash;
@@ -90,7 +87,8 @@ public class UploadFileController {
                 bos.close();
                 bis.close();
             }
-
+            FileUtils.deleteDirectory(new File(FileUrlConstant.UPLOAD_FILE_PATH + uploadFileDTO.getFileHash()));
+            return Result.success("合并成功");
         }
         return Result.success("合并成功");
     }
