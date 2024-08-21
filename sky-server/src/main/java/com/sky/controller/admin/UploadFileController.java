@@ -74,7 +74,6 @@ public class UploadFileController {
         Arrays.sort(chunks);
         log.info("开始读取: {}",uploadFileDTO.getFileName());
 
-
         assert chunks != null;
         if(chunks.length != 0){
             for (int i = 0; i < chunks.length; i++) {
